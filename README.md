@@ -4,6 +4,14 @@ A consolidated Spider Monkey Panel transport-control and playback-information pa
 
 SMP_Playcontrol combines playback controls, seek/volume controls, track information, album artwork, wallpaper, configurable buttons, and Last.fm integration in a single self-contained JavaScript panel.
 
+## Screenshot
+
+![SMP_Playcontrol](images/SMP_PlayControl_1.png)
+
+The screenshot above shows the current PlayControl panel in its configured 2.0.x
+layout. The panel appearance, controls, colors, fonts, artwork, wallpaper, and
+other elements can be customized through the Spider Monkey Panel Properties dialog.
+
 ## Current Version
 
 **2.0.50**
