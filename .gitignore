@@ -1,0 +1,14 @@
+# Local foobar2000 / SMP data
+*.ini
+*.log
+
+# Local editor / OS files
+.vscode/
+.idea/
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+
+# Build/package output
+*.zip
