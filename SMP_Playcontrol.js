@@ -2,7 +2,7 @@
 
 window.DefineScript('PlayControl', {
   author: 'TheQwertiest / @marc2003 / @Br3tt / T.P Wang / whistlechips / OpenAI',
-  version: '2.0.49',
+  version: '2.0.50',
   options: {
     grab_focus: true
   }
@@ -596,9 +596,9 @@ function bit_rol(a,b){return(a<<b)|(a>>>(32-b))}
 
 
 // -----------------------------------------------------------------------------
-// _chrToImg improvements — 6/18/2025. 
+// _chrToImg improvements â€” 6/18/2025. 
 // -----------------------------------------------------------------------------
-//   try...finally ensures graphics context is always released (SpiderMonkey doesn’t do GC for GDI handles).
+//   try...finally ensures graphics context is always released (SpiderMonkey doesnâ€™t do GC for GDI handles).
 //   Fallback for size using size = size || 96; (works in SpiderMonkey safely).
 //   Avoids arrow functions or ES6+ syntax, sticking to the classic, reliable subset.
 // -----------------------------------------------------------------------------
@@ -623,7 +623,7 @@ function _chrToImg(chr, colour, font, size) {
 
 
 // -----------------------------------------------------------------------------
-// make_rgb() improvements — 07/06/2025.
+// make_rgb() improvements â€” 07/06/2025.
 // -----------------------------------------------------------------------------
 //    RGB(A) comma-separated strings like "255,128,64" or "255,128,64,128"
 //    Hex color strings like "#FF8040", "FF8040", or even short format "#F83"
@@ -638,7 +638,7 @@ function make_rgb(a) {
   if (a[0] === '#') a = a.slice(1);
 
   if (/^#[0-9a-fA-F]{3}$/.test(a)) {
-    // Expand shorthand hex (#f83 → #ff8833)
+    // Expand shorthand hex (#f83 â†’ #ff8833)
     a = '#' + a.slice(1).split('').map(ch => ch + ch).join('');
   }
 
@@ -669,118 +669,144 @@ function make_rgb(a) {
 // objects for text elements and their assignments
 // -----------------------------------------------------------------------------
 function tfo(tf, fsize, style, source) {
-  this.tf = tf;
-  this.fsize = fsize;
-  this.style = style;
-  this.source = source || '';
-  this.rgbParts = null;
+    this.tf = tf;
+    this.fsize = fsize;
+    this.style = style;
+    this.source = source || '';
+    this.rgbParts = null;
 
-  // Parse only the simple $rgb(r,g,b) / $rgb() color controls used by
-  // foobar2000 Title Formatting. The actual text between controls is still
-  // evaluated by foobar2000, so normal TF expressions retain their behavior.
-  if (/\$rgb\s*\(/i.test(this.source)) {
-    const re = /\$rgb\s*\(\s*(?:(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3}))?\s*\)/gi;
-    let last = 0;
-    let match;
-    this.rgbParts = [];
+    // Evaluate a Title Formatting expression through foobar2000.
+    // EvalWithMetadb() allows the complete foobar2000 TF language to be
+    // processed, including $max(), $min(), $if(), $ifgreater(), etc.
+    this.eval = function (tf) {
+        if (!tf) return '';
+        return tf.EvalWithMetadb(panel.metadb);
+    };
 
-    while ((match = re.exec(this.source)) !== null) {
-      if (match.index > last) {
-        this.rgbParts.push({
-          tf: fb.TitleFormat(this.source.substring(last, match.index)),
-          color: null
-        });
-      }
+    // Parse only $rgb(r,g,b) / $rgb() color controls.
+    // Everything between color controls remains a complete foobar2000
+    // Title Formatting expression and is evaluated by fb.TitleFormat().
+    if (/\$rgb\s*\(/i.test(this.source)) {
+        const re = /\$rgb\s*\(\s*(?:(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3}))?\s*\)/gi;
+        let last = 0;
+        let match;
 
-      this.rgbParts.push({
-        tf: null,
-        color: match[1] === undefined
-          ? null
-          : _RGBA(
-              Math.min(255, Number(match[1])),
-              Math.min(255, Number(match[2])),
-              Math.min(255, Number(match[3])),
-              255
-            )
-      });
+        this.rgbParts = [];
 
-      last = re.lastIndex;
+        while ((match = re.exec(this.source)) !== null) {
+            if (match.index > last) {
+                this.rgbParts.push({
+                    tf: fb.TitleFormat(this.source.substring(last, match.index)),
+                    color: null
+                });
+            }
+
+            this.rgbParts.push({
+                tf: null,
+                color: match[1] === undefined
+                    ? null
+                    : _RGBA(
+                        Math.min(255, Number(match[1])),
+                        Math.min(255, Number(match[2])),
+                        Math.min(255, Number(match[3])),
+                        255
+                    )
+            });
+
+            last = re.lastIndex;
+        }
+
+        if (last < this.source.length) {
+            this.rgbParts.push({
+                tf: fb.TitleFormat(this.source.substring(last)),
+                color: null
+            });
+        }
+
+        if (!this.rgbParts.length) {
+            this.rgbParts = null;
+        }
     }
 
-    if (last < this.source.length) {
-      this.rgbParts.push({
-        tf: fb.TitleFormat(this.source.substring(last)),
-        color: null
-      });
-    }
+    this.font = function () {
+        return _gdiFont(fontName, this.fsize, this.style);
+    };
 
-    // A source containing $rgb() but no drawable text is still valid.
-    if (!this.rgbParts.length) this.rgbParts = null;
-  }
+    this.h = function () {
+        return this.font().Height * 1.2;
+    };
 
-  this.font = function () {
-    return _gdiFont(fontName, this.fsize, this.style);
-  };
+    this.draw = function (gr, baseColor, x, y, w, h, flags) {
+        if (!this.rgbParts) {
+            gr.GdiDrawText(
+                this.eval(this.tf),
+                this.font(),
+                baseColor,
+                x, y, w, h,
+                flags
+            );
+            return;
+        }
 
-  this.h = function () {
-    return this.font().Height * 1.2; // height with line spacing
-  };
+        const font = this.font();
+        let drawX = x;
+        let activeColor = baseColor;
+        const end = x + w;
 
-  this.draw = function (gr, baseColor, x, y, w, h, flags) {
-    if (!this.rgbParts) {
-      gr.GdiDrawText(this.tf.Eval(true), this.font(), baseColor, x, y, w, h, flags);
-      return;
-    }
+        for (let i = 0; i < this.rgbParts.length; i++) {
+            const part = this.rgbParts[i];
 
-    const font = this.font();
-    let drawX = x;
-    let activeColor = baseColor;
-    const end = x + w;
+            if (part.tf === null) {
+                activeColor = part.color === null
+                    ? baseColor
+                    : part.color;
+                continue;
+            }
 
-    for (let i = 0; i < this.rgbParts.length; i++) {
-      const part = this.rgbParts[i];
+            const value = this.eval(part.tf);
 
-      if (part.tf === null) {
-        activeColor = part.color === null ? baseColor : part.color;
-        continue;
-      }
+            if (!value || drawX >= end) {
+                continue;
+            }
 
-      const value = part.tf.Eval(true);
-      if (!value || drawX >= end) continue;
+            const partW = gr.CalcTextWidth(value, font);
+            const remaining = end - drawX;
 
-      const partW = gr.CalcTextWidth(value, font);
-      const remaining = end - drawX;
+            if (partW <= remaining) {
+                gr.GdiDrawText(
+                    value,
+                    font,
+                    activeColor,
+                    drawX, y, partW, h,
+                    DT_LEFT | DT_VCENTER | DT_NOPREFIX
+                );
 
-      if (partW <= remaining) {
-        gr.GdiDrawText(
-          value, font, activeColor,
-          drawX, y, partW, h,
-          DT_LEFT | DT_VCENTER | DT_NOPREFIX
-        );
-        drawX += partW;
-      } else {
-        gr.GdiDrawText(
-          value, font, activeColor,
-          drawX, y, remaining, h,
-          DT_LEFT | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS
-        );
-        break;
-      }
-    }
-  };
+                drawX += partW;
+            } else {
+                gr.GdiDrawText(
+                    value,
+                    font,
+                    activeColor,
+                    drawX, y, remaining, h,
+                    DT_LEFT | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS
+                );
+
+                break;
+            }
+        }
+    };
 }
-
 
 // -----------------------------------------------------------------------------
 ;
 
 // -----------------------------------------------------------------------------
-// Button constructor/prototype improvements — 6/18/2025.
+// Button constructor/prototype improvements â€” 6/18/2025.
 // -----------------------------------------------------------------------------
 //  Replacing this.x = function() {} style methods with prototype methods (more efficient memory usage).
-//  Using let instead of let/const to match SpiderMonkey’s supported ES version.
+//  Using let instead of let/const to match SpiderMonkeyâ€™s supported ES version.
 //  Simplifying ternaries and avoiding unnecessary dynamic functions or chains.
-//  Ensuring compatibility with SpiderMonkey’s limited ES5.1 support.
+//  Ensuring compatibility with SpiderMonkeyâ€™s limited ES5.1 support.
 // -----------------------------------------------------------------------------
 function make_button(b) {
 	buttons.buttons[b.d] = new _button(
@@ -992,7 +1018,7 @@ function drawTime(gr, textColor) {
 }
 
 // -----------------------------------------------------------------------------
-// get_album_art improvements — 6/17/2025.
+// get_album_art improvements â€” 6/17/2025.
 // -----------------------------------------------------------------------------
 // Improvements:
 //   Checks metadb before attempting to access it.
@@ -1011,7 +1037,7 @@ function get_album_art(metadb) {
 };
 
 // -----------------------------------------------------------------------------
-// setWallpaperImg improvements — @Br3tt, 6/17/2025.
+// setWallpaperImg improvements â€” @Br3tt, 6/17/2025.
 // -----------------------------------------------------------------------------
 // Improvements:
 //   Explicit return null instead of falling through with undefined.
@@ -1051,7 +1077,7 @@ function setWallpaperImg(metadb) {
 // -----------------------------------------------------------------------------
 // FormatWallpaper (SpiderMonkey Compatible) 
 // -----------------------------------------------------------------------------
-// Improvements — 6/18/2025.
+// Improvements â€” 6/18/2025.
 //   Added safety check for panel to avoid potential runtime errors.
 //   Used true instead of 1 for auto_fill in drawImage() to clarify intent.
 //   Moved default fallback logic for blur value into a variable.
@@ -1150,7 +1176,7 @@ function draw_blurred_image(image, ix, iy, iw, ih, bx, by, bw, bh, blur_value, o
 // -----------------------------------------------------------------------------
 // drawImage (SpiderMonkey Compatible) 
 // -----------------------------------------------------------------------------
-// Improvements — 06/17/2025.
+// Improvements â€” 06/17/2025.
 //   Avoided magic numbers: alpha ?? 255 ensures clarity.
 //   Reduced repetition: DrawImage arguments grouped clearly, no duplicate calculations.
 //   Simplified logic: Easier to read with fewer nested structures.
@@ -1276,15 +1302,15 @@ const ppt = {
   artist: window.GetProperty(           'TEXT: Now Playing Line2 Format', '[%artist%]  \u2022  [%album%][  \u2022  %date%]'),//[%artist%]  \u2022  [%album%][  \u2022  $month(%last_played_enhanced%)-$day_of_month(%last_played_enhanced%)-$year(%last_played_enhanced%)]
   artistrun: window.GetProperty(        'TEXT: Artist Context Command', 'Run service/Google Artist'), 						// Named Service in foo_run component.
   album_fsize: window.GetProperty(      'TEXT: Now Playing Line3 Size', 8),
-  album: window.GetProperty(            'TEXT: Now Playing Line3 Format', '[%codec%[ %codec_profile%]][  \u2022  %bitrate% kbs][  \u2022  %filesize_natural%][  \u2022  %play_count% $ifgreater(%play_count%,1,plays,play)][$if(%last_played_enhanced%,  \u2022  Last: $month(%last_played_enhanced%)'-'$day_of_month(%last_played_enhanced%)'-'$right($year(%last_played_enhanced%),2),)]'),
+  album: window.GetProperty(            'TEXT: Now Playing Line3 Format', '[%codec%[ %codec_profile%]][  •  %bitrate% kbs][  •  %filesize_natural%][  •  %play_count% $ifgreater(%play_count%,1,plays,play)][$if(%last_played_enhanced%,  •  Last: $month(%last_played_enhanced%)\'-\'$day_of_month(%last_played_enhanced%)\'-\'$right($year(%last_played_enhanced%),2),)]'),
   pb_len: window.GetProperty(           'TEXT: Playback Length Format', '[%playback_time_remaining%]'),
   pb_time: window.GetProperty(          'TEXT: Playback Time Format', '[%playback_time%] '),
-	showwallpaper: window.GetProperty(    'WALLPAPER: Show', false),
-	wallpaperalpha: window.GetProperty(   'WALLPAPER: Alpha', 224),
-	wallpaperblurvalue:window.GetProperty('WALLPAPER: Blur Value (2-90)', 3),//1.05,
-	wallpaperblurred: window.GetProperty( 'WALLPAPER: Blur', false),
-	wallpaperpath: window.GetProperty(    'WALLPAPER: Default Path', '.\\user-components\\foo_spider_monkey_panel\\samples\\js-smooth\\images\\default.png'),
-	wallpapermode: window.GetProperty(    'WALLPAPER: Mode (0: Internal 1: External)', 0),
+  showwallpaper: window.GetProperty(    'WALLPAPER: Show', false),
+  wallpaperalpha: window.GetProperty(   'WALLPAPER: Alpha', 224),
+  wallpaperblurvalue:window.GetProperty('WALLPAPER: Blur Value (2-90)', 3),//1.05,
+  wallpaperblurred: window.GetProperty( 'WALLPAPER: Blur', false),
+  wallpaperpath: window.GetProperty(    'WALLPAPER: Default Path', '.\\user-components\\foo_spider_monkey_panel\\samples\\js-smooth\\images\\default.png'),
+  wallpapermode: window.GetProperty(    'WALLPAPER: Mode (0: Internal 1: External)', 0),
   play_btn_count:                       7, // number of playback and shortcut control buttons under seekbar and volume bar.
   short_btn_count:                      5,
   save_chr: window.GetProperty(         'BUTTONS: Shortcut 4 Character', '\ue1cb'),
@@ -1306,7 +1332,7 @@ const colors = {
   Border:           make_rgb('255, 255, 255,' + ppt.btn_bg_alpha),
 };
 
-const album =				new tfo(fb.TitleFormat(ppt.album), ppt.album_fsize, 0, ppt.album);
+const album = new tfo(fb.TitleFormat(ppt.album), ppt.album_fsize, 0, ppt.album);
 let albumart = null;
 const arc =					{bar: 0, bg: 0};// diameter for FillRoundRect func for progress and volume bars
 const art =					{x: 0, y: 0, w: 0, h: 0};
@@ -1778,8 +1804,8 @@ function on_volume_change() {
 //   * `volbar.lbtn_up()`
 // * If any of those handlers process the click, the function exits immediately.
 // * If the click occurred over the album art and album art display is enabled (`ppt.showalbumart`), it runs the configured album art context command (`ppt.artrun`).
-// * If the click occurred over the title area while “now playing” mode is enabled, it runs the title context command (`ppt.titlerun`).
-// * If the click occurred over the artist area while “now playing” mode is enabled, it runs the artist context command (`ppt.artistrun`).
+// * If the click occurred over the title area while â€œnow playingâ€ mode is enabled, it runs the title context command (`ppt.titlerun`).
+// * If the click occurred over the artist area while â€œnow playingâ€ mode is enabled, it runs the artist context command (`ppt.artistrun`).
 // * Finally, it issues the Foobar2000 main menu command:
 //   * `View/Highlight Now Playing`
 // -----------------------------------------------------------------------------
@@ -2048,7 +2074,7 @@ buttons.update = function () {
 // | `Math.max(ppt.seekbar_height, 2)` | More intuitive than ternary for minimum constraint |
 // | `Math.min(...)` for handle height | Clean constraint on handle size                    |
 // | Consistent semicolons             | Fixed accidental comma in `arc.bg` assignment      |
-// | Grouped sections                  | Logical structure: art → bars → buttons            |
+// | Grouped sections                  | Logical structure: art â†’ bars â†’ buttons            |
 // | Simplified comments               | Kept helpful ones, removed outdated or redundant   |
 // ------------------------------------------------------------------------------------------
 // | 07/06/2025: art and bar variables cleaned redundent assignments.                       |
