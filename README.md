@@ -6,9 +6,9 @@ SMP_Playcontrol combines playback controls, seek/volume controls, track informat
 
 ## Current Version
 
-**2.0.49**
+**2.0.50**
 
-Version 2.0.49 is the current tested development baseline. It includes the consolidation of the earlier multi-file PlayControl implementation and the subsequent cleanup and performance work.
+Version 2.0.50 is the current tested development baseline. It includes the consolidation of the earlier multi-file PlayControl implementation, subsequent cleanup and performance work, and generalized foobar2000 Title Formatting evaluation.
 
 ## Features
 
@@ -111,6 +111,13 @@ Development follows an incremental approach:
 The Git repository preserves the historical project record while the current `main` branch is being brought up to date with the consolidated 2.x implementation.
 
 ## Version History
+
+### 2.0.50
+
+- Generalized Title Formatting evaluation through foobar2000 `EvalWithMetadb()`.
+- Supports the full foobar2000 Title Formatting expression language used by the panel, including functions such as `$max()`, `$min()`, `$if()`, and `$ifgreater()`.
+- Retained `$rgb()` support for inline color changes within configurable text expressions.
+- Tested with Title Formatting expressions combining standard fields, conditional expressions, and `$rgb()` color controls.
 
 ### 2.0.49
 
