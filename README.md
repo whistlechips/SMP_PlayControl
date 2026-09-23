@@ -4,19 +4,11 @@ A consolidated Spider Monkey Panel transport-control and playback-information pa
 
 SMP_Playcontrol combines playback controls, seek/volume controls, track information, album artwork, wallpaper, configurable buttons, and Last.fm integration in a single self-contained JavaScript panel.
 
-## Screenshot
-
-![SMP_Playcontrol](images/SMP_PlayControl_1.png)
-
-The screenshot above shows the current PlayControl panel in its configured 2.0.x
-layout. The panel appearance, controls, colors, fonts, artwork, wallpaper, and
-other elements can be customized through the Spider Monkey Panel Properties dialog.
-
 ## Current Version
 
-**2.0.50**
+**2.0.51**
 
-Version 2.0.50 is the current tested development baseline. It includes the consolidation of the earlier multi-file PlayControl implementation, subsequent cleanup and performance work, and generalized foobar2000 Title Formatting evaluation.
+Version 2.0.51 is the current tested development baseline. It includes the consolidation of the earlier multi-file PlayControl implementation, subsequent cleanup and performance work, and generalized foobar2000 Title Formatting evaluation.
 
 ## Features
 
@@ -119,6 +111,12 @@ Development follows an incremental approach:
 The Git repository preserves the historical project record while the current `main` branch is being brought up to date with the consolidated 2.x implementation.
 
 ## Version History
+
+### 2.0.51
+
+- Fixed a Last.fm authorization crash caused by a leftover reference to the obsolete `panel.list_objects` collection.
+- Confirmed Last.fm authorization successfully with the consolidated single-file implementation.
+- Retains the generalized Title Formatting handling introduced in 2.0.50.
 
 ### 2.0.50
 
