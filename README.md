@@ -2,6 +2,8 @@
 
 A consolidated Spider Monkey Panel transport-control and playback-information panel for foobar2000.
 
+<img width="1360" height="76" alt="image" src="https://github.com/user-attachments/assets/5fc1c8a6-20cf-440b-9a25-be63bac751fa" />
+
 SMP_Playcontrol combines playback controls, seek/volume controls, track information, album artwork, wallpaper, configurable buttons, and Last.fm integration in a single self-contained JavaScript panel.
 
 ## Current Version
