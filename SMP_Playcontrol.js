@@ -2,7 +2,7 @@
 
 window.DefineScript('PlayControl', {
   author: 'TheQwertiest / @marc2003 / @Br3tt / T.P Wang / whistlechips / OpenAI',
-  version: '2.0.50',
+  version: '2.0.51',
   options: {
     grab_focus: true
   }
@@ -349,11 +349,9 @@ function _lastfm() {
 				buttons.update();
 				window.Repaint();
 			}
-			panel.list_objects.forEach((item) => {
-				if (item.mode == 'lastfm_info' && item.properties.mode.value > 0) {
-					item.update();
-				}
-			});
+			// The consolidated PlayControl panel no longer maintains the
+			// legacy panel.list_objects collection. Other panels receive
+			// the notification through window.NotifyOthers() above.
 		}
 	}
 	
@@ -1716,7 +1714,7 @@ function _createFolder(path) {
 // normal button hover state takes priority over the animation phase.
 // -----------------------------------------------------------------------------
 function startPlayBlink() {
-	const playBlinkInterval = 500;
+	const playBlinkInterval = 1000;
   if (playBlinkTimer) return;
 
   playBlinkPhase = false;
