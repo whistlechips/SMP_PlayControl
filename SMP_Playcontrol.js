@@ -1,8 +1,8 @@
-'use strict';
+﻿'use strict';
 
 window.DefineScript('PlayControl', {
   author: 'TheQwertiest / @marc2003 / @Br3tt / T.P Wang / whistlechips / OpenAI',
-  version: '2.0.51',
+  version: '2.0.52',
   options: {
     grab_focus: true
   }
@@ -678,7 +678,9 @@ function tfo(tf, fsize, style, source) {
     // processed, including $max(), $min(), $if(), $ifgreater(), etc.
     this.eval = function (tf) {
         if (!tf) return '';
-        return tf.EvalWithMetadb(panel.metadb);
+        const metadb = fb.IsPlaying ? (fb.GetNowPlaying() || panel.metadb) : panel.metadb;
+        if (!metadb) return '';
+        return tf.EvalWithMetadb(metadb);
     };
 
     // Parse only $rgb(r,g,b) / $rgb() color controls.
@@ -1681,7 +1683,7 @@ function _panel() {
 
 	this.w = 0;
 	this.h = 0;
-	this.metadb = fb.GetFocusItem();
+	this.metadb = fb.IsPlaying ? (fb.GetNowPlaying() || fb.GetFocusItem()) : fb.GetFocusItem();
 	this.metadb_func = typeof on_metadb_changed == 'function';
 	this.tfo = {
 		'$if2(%__@%,%path%)': fb.TitleFormat('$if2(%__@%,%path%)')
@@ -1714,7 +1716,7 @@ function _createFolder(path) {
 // normal button hover state takes priority over the animation phase.
 // -----------------------------------------------------------------------------
 function startPlayBlink() {
-	const playBlinkInterval = 1000;
+	const playBlinkInterval = 500;
   if (playBlinkTimer) return;
 
   playBlinkPhase = false;
@@ -1902,6 +1904,7 @@ function on_playback_edited() {
 
 function on_playback_new_track(metadb) {
   if (!metadb) return;
+  panel.metadb = metadb;
   g_wallpaperImg = setWallpaperImg(metadb) || g_wallpaperImg;
   albumart = get_album_art(metadb);
   if (fb.IsPlaying && !fb.IsPaused) startPlayBlink();

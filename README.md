@@ -2,15 +2,13 @@
 
 A consolidated Spider Monkey Panel transport-control and playback-information panel for foobar2000.
 
-<img width="1360" height="76" alt="image" src="https://github.com/user-attachments/assets/5fc1c8a6-20cf-440b-9a25-be63bac751fa" />
-
 SMP_Playcontrol combines playback controls, seek/volume controls, track information, album artwork, wallpaper, configurable buttons, and Last.fm integration in a single self-contained JavaScript panel.
 
 ## Current Version
 
-**2.0.51**
+**2.0.52**
 
-Version 2.0.51 is the current tested development baseline. It includes the consolidation of the earlier multi-file PlayControl implementation, subsequent cleanup and performance work, and generalized foobar2000 Title Formatting evaluation.
+Version 2.0.52 is the current tested development baseline. It retains generalized foobar2000 Title Formatting evaluation and corrects Last.fm authorization and metadata initialization during playback changes.
 
 ## Features
 
@@ -114,18 +112,23 @@ The Git repository preserves the historical project record while the current `ma
 
 ## Version History
 
+### 2.0.52
+
+- Prevented `EvalWithMetadb()` errors when a track metadata handle is temporarily null.
+- Updated metadata initialization and new-track handling so Now Playing text lines 1–3 display after selecting a track in SMP Album Visualizer without requiring Next Track or Previous Track.
+- Preserved generalized Title Formatting support introduced in 2.0.50.
+- Confirmed the metadata fix works in foobar2000 with Spider Monkey Panel 1.6.1.
+
 ### 2.0.51
 
-- Fixed a Last.fm authorization crash caused by a leftover reference to the obsolete `panel.list_objects` collection.
-- Confirmed Last.fm authorization successfully with the consolidated single-file implementation.
-- Retains the generalized Title Formatting handling introduced in 2.0.50.
+- Fixed a Last.fm authorization crash caused by an obsolete `panel.list_objects` reference.
+- Confirmed Last.fm authorization succeeds in the consolidated implementation.
 
 ### 2.0.50
 
-- Generalized Title Formatting evaluation through foobar2000 `EvalWithMetadb()`.
-- Supports the full foobar2000 Title Formatting expression language used by the panel, including functions such as `$max()`, `$min()`, `$if()`, and `$ifgreater()`.
-- Retained `$rgb()` support for inline color changes within configurable text expressions.
-- Tested with Title Formatting expressions combining standard fields, conditional expressions, and `$rgb()` color controls.
+- Generalized Title Formatting evaluation through foobar2000's `EvalWithMetadb()`.
+- Supported native Title Formatting functions such as `$max()`, `$min()`, `$if()`, and `$ifgreater()`.
+- Retained special `$rgb()` handling for inline text colors.
 
 ### 2.0.49
 
