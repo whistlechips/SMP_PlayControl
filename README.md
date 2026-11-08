@@ -3,6 +3,7 @@
 A consolidated Spider Monkey Panel transport-control and playback-information panel for foobar2000.
 
 SMP_Playcontrol combines playback controls, seek/volume controls, track information, album artwork, wallpaper, configurable buttons, and Last.fm integration in a single self-contained JavaScript panel.
+![image](https://github.com/user-attachments/assets/c18354e5-f536-4dd1-b365-21649329dc37)
 
 ## Current Version
 
@@ -63,12 +64,16 @@ The existing Last.fm configuration and session data are retained by the script. 
 - Segoe Fluent Icons for the intended button appearance
 - A configured text font; the default is Roboto, with Segoe UI used as the fallback when the configured font is unavailable
 
+![image](https://github.com/user-attachments/assets/d7e99f1d-f1e4-465b-911f-c756b5cdf659)
+
 ## Installation
 
 1. Download the current release ZIP.
 2. Extract the contents into the appropriate foobar2000 profile location.
 3. Add `SMP_Playcontrol.js` to a Spider Monkey Panel.
 4. Configure the panel through the SMP Properties dialog.
+
+![image](https://github.com/user-attachments/assets/10a6f8f9-49f6-4e5a-a8e4-9c853f5ec1a5)
 
 ## Configuration
 
@@ -83,6 +88,8 @@ PlayControl provides user-configurable properties for:
 - Wallpaper
 
 Customized properties can be exported/imported through the normal Spider Monkey Panel property facilities.
+![image](https://github.com/user-attachments/assets/83984343-a16c-41f1-9116-d6baf71fb2bf)
+![image](https://github.com/user-attachments/assets/8a38d21a-09f7-46ee-8e37-63af601cee59)
 
 ## Project Structure
 
